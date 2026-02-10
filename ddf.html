@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>p5.js 互動霓虹粒子</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+  <style>
+    /* CSS 設定：移除邊距並隱藏捲軸，確保畫布滿版 */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* 防止出現捲軸 */
+      background-color: #000;
+    }
+    canvas {
+      display: block; /* 移除 canvas 預設的底部微小間距 */
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  let particles = [];
+
+  function setup() {
+    // 建立與視窗同寬高的畫布
+    createCanvas(windowWidth, windowHeight);
+    
+    // 使用 HSB 模式 (色相, 飽和度, 亮度, 透明度)
+    colorMode(HSB, 360, 100, 100, 100);
+    noStroke();
+  }
+
+  function draw() {
+    // 繪製半透明背景以產生拖尾效果
+    background(0, 0, 0, 10);
+
+    // 當滑鼠移動時產生粒子
+    if (mouseX !== pmouseX || mouseY !== pmouseY) {
+      // 每次移動產生 5 個粒子，增加豐富度
+      for (let i = 0; i < 5; i++) {
+        particles.push(new Particle(mouseX, mouseY));
+      }
+    }
+
+    // 處理所有粒子
+    for (let i = particles.length - 1; i >= 0; i--) {
+      let p = particles[i];
+      p.update();
+      p.show();
+
+      if (p.finished()) {
+        particles.splice(i, 1);
+      }
+    }
+  }
+
+  // --- 關鍵：響應式功能 ---
+  // 當瀏覽器視窗大小改變時，觸發此函式
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    background(0); // 重設背景，避免縮放時出現破圖
+  }
+
+  // --- 粒子類別 ---
+  class Particle {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.vx = random(-2, 2);
+      this.vy = random(-2, 2);
+      this.size = random(10, 25);
+      
+      // 讓顏色隨時間自動變化 (彩虹特效)
+      this.hue = frameCount % 360; 
+      this.life = 100;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.life -= 1.5;     // 減少壽命
+      if(this.size > 0) this.size -= 0.1; // 慢慢變小
+    }
+
+    finished() {
+      return this.life < 0;
+    }
+
+    show() {
+      fill(this.hue, 80, 100, this.life);
+      circle(this.x, this.y, this.size);
+    }
+  }
+</script>
+
+</body>
+</html>
